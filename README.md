@@ -34,7 +34,7 @@ v1.3.	Add several possibilities to provide IP ranges:
 			all IPs addresses corresponding to that IP and mask are blacklisted
 		A.B.C.D/T, T between 0 TO 32 : CIDR notation.
 		For explanations, feel free to check http://en.wikipedia.org/wiki/IP_address.
-v1.4.	Allow comments at the end of each line to remember what the offence was.
+v1.4.a1.	Allow comments at the end of each line to remember what the offence was.
 		Sort IP addresses.
 </pre>
    
