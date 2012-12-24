@@ -30,7 +30,7 @@ function ludo_blacklist_ip_Analyze_IP ( $FullInput ) {
 		}
 		// show what it was if we changed it
 		if ( $Inputs[0] != $Inputs[1] ) {
-			$Comment = ($Comment? $Comment:."Range ".$Input);
+			$Comment = ($Comment? $Comment:"Range ".$Input);
 		}
 	}
 	elseif (ludo_blacklist_ip_Check_IP ( $Input )) { // Case input is a single IP

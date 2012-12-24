@@ -117,6 +117,6 @@ function ludo_blacklist_ip_process () {
 		foreach ($IPList as $value) echo $value."<BR />";
 	}
 }
-?>
+
 
 
