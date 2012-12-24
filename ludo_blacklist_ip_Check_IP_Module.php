@@ -1,7 +1,12 @@
 <?php
 
-function ludo_blacklist_ip_Analyze_IP ( $Input ) {
+function ludo_blacklist_ip_Analyze_IP ( $FullInput ) {
+	$Inputs = array_map ("trim", explode ( "#" , $FullInput ));
+	$Input = trim($Inputs[0]);
+	$Comment = trim($Inputs[1]);
 	if ( strpos ( $Input , "/" ) !== FALSE ) { // Case input contain "/"
+		// show what it was since we're changing it
+		$Comment = ($Comment? $Input."; ".$Comment:$Input);
 		$Inputs = array_map ("trim", explode ( "/" , $Input ) );
 		if (ludo_blacklist_ip_Check_IP ( $Inputs[0] ) && ctype_digit ($Inputs[1]) && $Inputs[1] > 0 && $Inputs[1] <= 32) { // Cas CIDR
 			$Cible = ludo_blacklist_ip_CalculIPMask ( $Inputs[0] , ludo_blacklist_ip_MaskType2Mask ( $Inputs[1] ) ) ;
@@ -14,7 +19,7 @@ function ludo_blacklist_ip_Analyze_IP ( $Input ) {
 	elseif ( strpos ( $Input , "-" ) !== FALSE ) { // Case input contains "-"
 		$Inputs = array_map ("trim", explode ( "-" , $Input ) );
 		if ( ludo_blacklist_ip_Check_IP ( $Inputs[0] ) && ludo_blacklist_ip_Check_IP ( $Inputs[1] ) ) {
-			if ( $Inputs[0] < $Inputs[1] ) { // Check IP orders
+			if ( $Inputs[0] <= $Inputs[1] ) { // Check IP orders
 				$Cible = $Inputs[0] . "-" . $Inputs[1] ;
 			}
 			else { // If wrong order, reverse it
@@ -23,19 +28,27 @@ function ludo_blacklist_ip_Analyze_IP ( $Input ) {
 		} else { // Contains "-" but invalid
 			$Cible="NULL";
 		}
+		// show what it was if we changed it
+		if ( $Inputs[0] != $Inputs[1] ) {
+			$Comment = ($Comment? $Comment:."Range ".$Input);
+		}
 	}
 	elseif (ludo_blacklist_ip_Check_IP ( $Input )) { // Case input is a single IP
 		$Inputs = array_map ("trim", explode ( "." , $Input ) );
 		if ( $Inputs[0] == 0 && $Inputs[1] == 0 && $Inputs[2] == 0 && $Inputs[3] == 0 ) { // Case 0.0.0.0
+			$Comment = ($Comment? $Input."; Range; ".$Comment:$Input."; Range");
 			$Cible = "0.0.0.0-255.255.255.255" ;
 		}
 		elseif ( $Inputs[1] == 0 && $Inputs[2] == 0 && $Inputs[3] == 0 ) { // Case A.0.0.0
+			$Comment = ($Comment? $Input."; Range; ".$Comment:$Input."; Range");
 			$Cible = $Inputs[0] . ".0.0.0-" . $Inputs[0] . ".255.255.255";
 		}
 		elseif ( $Inputs[2] == 0 && $Inputs[3] == 0 ) { // Case A.B.0.0
+			$Comment = ($Comment? $Input."; Range; ".$Comment:$Input."; Range");
 			$Cible = $Inputs[0] . "." . $Inputs[1] . ".0.0-" . $Inputs[0] . "." . $Inputs[1] . ".255.255";
 		}
 		elseif ( $Inputs[3] == 0 ) { // Case A.B.C.0
+			$Comment = ($Comment? $Input."; Range; ".$Comment:$Input."; Range");
 			$Cible = $Inputs[0] . "." . $Inputs[1] . "." . $Inputs[2] . ".0-" . $Inputs[0] . "." . $Inputs[1] . "." . $Inputs[2] . ".255";
 		}
 		else { // Case of a single IP address
@@ -44,6 +57,9 @@ function ludo_blacklist_ip_Analyze_IP ( $Input ) {
 	}
 	else { // Invalid IP address
 			$Cible="NULL";
+	}
+	if ( $Comment && $Cible ) {
+		$Cible = $Cible."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# ".$Comment;
 	}
 	return $Cible;
 }

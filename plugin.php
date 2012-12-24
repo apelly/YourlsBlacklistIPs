@@ -26,7 +26,9 @@ function ludo_blacklist_ip_root ( $args ) {
 	$Intervalle_IP = ( $Intervalle_IP ) ? ( unserialize ( $Intervalle_IP ) ):((array)NULL); 
 
 	foreach ( $Intervalle_IP as $value ) {
-		$IPs = explode ( "-" , $value );
+                // remove comments
+		$IPs = explode ( "#" , $value );
+		$IPs = explode ( "-" , $IPs[0] );
 
 		if ( $IP >= $IPs[0] AND $IP <= $IPs[1]) {
 			//      yourls_die ( "Your IP has been blacklisted.", "Black list",403);
@@ -65,10 +67,11 @@ function ludo_blacklist_ip_form () {
         <input type="hidden" name="nonce" value="$nonce" />
         
         <p>Blacklist following IPs (one range or IP per line, no wildcards allowed) :</p>
-        <p><textarea cols="50" rows="10" name="blacklist_form">$liste_ip_display</textarea></p>
+        <p><textarea cols="100" rows="30" name="blacklist_form">$liste_ip_display</textarea></p>
         
         <p><input type="submit" value="Save" /></p>
 		<p>I suggest to add here IPs that you saw adding bulk URL. It is your own responsibility to check the use of the IPs you block. WARNING : erroneous entries may create unexpected behaviours, please double-check before validation.</p>
+		<p>Addresses may be followed by a comment; anything following a # symbol will be interpreted as a comment. Lines consisting of only comments are permitted, but will be sorted incorrectly. You have been told!</p>
 		<p>Examples : 
 			<ul>
 				<li>10.0.0.1/24 : blacklist from 10.0.0.0 to 10.0.0.255 (CIDR notation).</li>
@@ -98,13 +101,14 @@ function ludo_blacklist_ip_process () {
 	$boucle = 0;
 
 	foreach ($IP_Form as $value) {
-		$Retour = ludo_blacklist_ip_Analyze_IP ( $value ) ;
+		$Retour = ludo_blacklist_ip_Analyze_IP ( $value ) ; // will add a comment if it modifiies the IP
 		if ( $Retour != "NULL" ) {
 			$IPList[$boucle++] = $Retour ;
 		}
 	}
 	// Update list
-	yourls_update_option ( 'ludo_blacklist_ip_liste', serialize ( $IPList ) );
+        $IPList === natsort($IPList);
+	yourls_update_option ( 'ludo_blacklist_ip_liste', serialize ( $IPList) );
 	echo "Black list updated. New blacklist is " ;
 	if ( count ( $IPList ) == 0 ) 
 		echo "empty.";
@@ -113,6 +117,6 @@ function ludo_blacklist_ip_process () {
 		foreach ($IPList as $value) echo $value."<BR />";
 	}
 }
-
+?>
 
 
